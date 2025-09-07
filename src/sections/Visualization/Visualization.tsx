@@ -345,20 +345,27 @@ const Visualization = forwardRef((_props, ref: ForwardedRef<HTMLDivElement>) => 
     </RLayerVector>
   );
 
-  // 自动根据路由参数设置城市
-  const cityObj = cities.find((c) => c.value === cityParam) ?? cities[0];
+  // 根据路由参数匹配城市
+const cityObj = cities.find((c) => c.value === cityParam);
 
-  // 如果参数非法，自动跳转到第一个城市
-  useEffect(() => {
-    if (!cityObj) {
-      navigate(`/city/${cities[0].value}`, { replace: true });
-    }
-  }, [cityParam, cityObj, navigate]);
+// 如果参数非法，跳转到默认城市（Stockholm）
+useEffect(() => {
+  if (!cityObj) {
+    navigate(`/city/${cities[0].value}`, { replace: true });
+  }
+}, [cityParam, cityObj, navigate]);
 
-  useEffect(() => {
+// 设置当前城市和视图
+useEffect(() => {
+  if (cityObj) {
     setCity(cityObj);
-    setView({ center: cityObj.newView?.center ?? initial.center, zoom: cityObj.newView?.zoom ?? initial.zoom });
-  }, [cityObj]);
+    setView({
+      center: cityObj.newView?.center ?? initial.center,
+      zoom: cityObj.newView?.zoom ?? initial.zoom,
+    });
+  }
+}, [cityObj]);
+
 
   return (
     <div ref={ref} style={{ position: 'relative' }}>
@@ -415,14 +422,14 @@ const Visualization = forwardRef((_props, ref: ForwardedRef<HTMLDivElement>) => 
               placeholder="Pick a city!"
               value={city ? city.value : null}
               onChange={(_value, option: CitiesType) => {
-                setCity(option);
-                setLayers([]);
-                if (option.newView) {
-                  setView({ center: option.newView.center, zoom: option.newView.zoom });
+                if (option?.value) {
+                  // 直接跳转路由
+                  navigate(`/city/${option.value}`);
                 }
               }}
               allowDeselect={false}
             />
+
             <Popover
               width={280}
               shadow="md"
